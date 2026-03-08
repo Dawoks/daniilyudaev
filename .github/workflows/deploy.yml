@@ -54,10 +54,8 @@ jobs:
           mkdir -p ./dist
           cp -R ./temp_site/. ./dist/
 
-          # Чтобы GitHub Pages не игнорировал папки вроде /_next/
           touch ./dist/.nojekyll
 
-          # Открытие сайта с корня Pages
           cat > ./dist/index.html <<EOF
           <!doctype html>
           <html lang="ru">
