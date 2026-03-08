@@ -1,4 +1,4 @@
-name: Superfast Framer Deploy
+name: Ultimate Fast Framer Deploy
 on:
   workflow_dispatch:
   schedule:
@@ -20,13 +20,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download Site (High Speed)
+      - name: Download Site (Safe & Fast)
         run: |
           rm -rf ./temp_site ./dist
           
-          # Мы используем --level=1 и --page-requisites
-          # Это скачает Главную + Кейсы + ВСЕ картинки и шрифты, 
-          # но НЕ пойдет по бесконечным техническим ссылкам Фреймера.
+          # Мы ограничиваем глубину до 2 уровней (Главная -> Кейсы)
+          # И запрещаем заходить в технические дебри /_next/
           wget --recursive \
                --level=2 \
                --convert-links \
@@ -34,15 +33,15 @@ jobs:
                --page-requisites \
                --no-parent \
                --span-hosts \
-               --domains="${{ secrets.FRAMER_URL }}",framerusercontent.com \
-               --exclude-domains=google-analytics.com,googletagmanager.com,facebook.net,framer.com \
+               --domains="${{ secrets.FRAMER_URL }}",framerusercontent.com,framer.com \
+               --exclude-domains=google-analytics.com,googletagmanager.com,facebook.net \
+               --exclude-directories=/_next/static/chunks,/_next/static/webpack,/_next/data \
                --reject="*.map,*.txt,robots.txt" \
                --header="Accept: image/avif,image/webp,*/*" \
                --user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
                "${{ secrets.FRAMER_URL }}" -P ./temp_site
           
           mkdir -p ./dist
-          # Копируем файлы, выпрямляя структуру
           SITE_DIR=$(find ./temp_site -name "index.html" -printf '%h' -quit)
           cp -r $SITE_DIR/. ./dist/
 
