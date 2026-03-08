@@ -70,6 +70,11 @@ jobs:
           EOF
 
           cp ./dist/index.html ./dist/404.html
+   
+      - name: Show site size
+        run: |
+          du -sh ./dist
+          du -sb ./dist
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
