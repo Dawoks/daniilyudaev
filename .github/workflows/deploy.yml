@@ -39,6 +39,7 @@ jobs:
             --page-requisites \
             --convert-links \
             --adjust-extension \
+            --restrict-file-names=windows \
             --span-hosts \
             --no-parent \
             --timeout=20 \
