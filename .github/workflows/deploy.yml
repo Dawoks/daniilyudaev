@@ -1,8 +1,9 @@
-name: Ultimate Fast Framer Deploy
+name: Full Framer Mirror Deploy
+
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 * * * *'
+    - cron: '0 */6 * * *'
 
 concurrency:
   group: "pages"
@@ -16,34 +17,64 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download Site (Safe & Fast)
+      - name: Mirror Framer site
+        env:
+          FRAMER_URL: ${{ secrets.FRAMER_URL }}
         run: |
+          set -e
           rm -rf ./temp_site ./dist
-          
-          # Мы ограничиваем глубину до 2 уровней (Главная -> Кейсы)
-          # И запрещаем заходить в технические дебри /_next/
-          wget --recursive \
-               --level=2 \
-               --convert-links \
-               --adjust-extension \
-               --page-requisites \
-               --no-parent \
-               --span-hosts \
-               --domains="${{ secrets.FRAMER_URL }}",framerusercontent.com,framer.com \
-               --exclude-domains=google-analytics.com,googletagmanager.com,facebook.net \
-               --exclude-directories=/_next/static/chunks,/_next/static/webpack,/_next/data \
-               --reject="*.map,*.txt,robots.txt" \
-               --header="Accept: image/avif,image/webp,*/*" \
-               --user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-               "${{ secrets.FRAMER_URL }}" -P ./temp_site
-          
+
+          SITE_HOST=$(echo "$FRAMER_URL" | sed -E 's#https?://([^/]+)/?.*#\1#')
+
+          wget \
+            -e robots=off \
+            -nv \
+            --recursive \
+            --level=2 \
+            --page-requisites \
+            --convert-links \
+            --adjust-extension \
+            --span-hosts \
+            --no-parent \
+            --timeout=20 \
+            --tries=2 \
+            --waitretry=1 \
+            --domains="$SITE_HOST,framerusercontent.com,framer.com,public.blob.vercel-storage.com" \
+            --exclude-domains=google-analytics.com,googletagmanager.com,facebook.net,doubleclick.net \
+            --reject="*.map,robots.txt" \
+            --user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" \
+            -P ./temp_site \
+            "$FRAMER_URL"
+
           mkdir -p ./dist
-          SITE_DIR=$(find ./temp_site -name "index.html" -printf '%h' -quit)
-          cp -r $SITE_DIR/. ./dist/
+          cp -R ./temp_site/. ./dist/
+
+          # Чтобы GitHub Pages не игнорировал папки вроде /_next/
+          touch ./dist/.nojekyll
+
+          # Открытие сайта с корня Pages
+          cat > ./dist/index.html <<EOF
+          <!doctype html>
+          <html lang="ru">
+          <head>
+            <meta charset="utf-8">
+            <meta http-equiv="refresh" content="0; url=./$SITE_HOST/">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Redirecting…</title>
+            <link rel="canonical" href="./$SITE_HOST/">
+          </head>
+          <body>
+            <p>Redirecting to <a href="./$SITE_HOST/">$SITE_HOST</a>…</p>
+          </body>
+          </html>
+          EOF
+
+          cp ./dist/index.html ./dist/404.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
