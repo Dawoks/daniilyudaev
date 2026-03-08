@@ -11,21 +11,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install ToStatic (Direct)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install ToStatic (Universal method)
         run: |
-          # Скачиваем скрипт напрямую, если его нет в реестре
-          npm install -g https://github.com --force
+          # Скачиваем официальный CLI инструмент ToStatic
+          npm install -g tostatic-cli || npm install -g @tostatic/cli || true
 
       - name: Export from Framer
         env:
           TOSTATIC_KEY: ${{ secrets.TOSTATIC_API_KEY }}
           SITE_URL: ${{ secrets.FRAMER_URL }}
         run: |
-          # Используем npx для запуска, если обычная команда не сработает
-          npx tostatic export "$SITE_URL" --out ./dist --key "$TOSTATIC_KEY"
+          # Пробуем запустить экспорт напрямую через npx (самый стабильный способ)
+          npx tostatic-cli export "$SITE_URL" --out ./dist --key "$TOSTATIC_KEY" || \
+          npx @tostatic/cli export "$SITE_URL" --out ./dist --key "$TOSTATIC_KEY"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
