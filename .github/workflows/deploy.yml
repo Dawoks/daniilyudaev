@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '0 * * * *'
 
+# Эта штука отменяет старые билды, если запустился новый
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 permissions:
   contents: write
   pages: write
@@ -18,11 +23,9 @@ jobs:
 
       - name: Download Site
         run: |
-          # Чистим старое
           rm -rf ./temp_site ./dist
           
-          # Скачиваем всё важное (шрифты, анимации, картинки)
-          # Но запрещаем качать бесконечный системный мусор
+          # Мы добавили --reject, чтобы не качать мусорные файлы (.map, .txt, .json логов)
           wget --recursive \
                --convert-links \
                --adjust-extension \
@@ -30,13 +33,12 @@ jobs:
                --no-parent \
                --span-hosts \
                --domains="${{ secrets.FRAMER_URL }}",framerusercontent.com,framer.com \
-               --exclude-domains=google-analytics.com,googletagmanager.com,facebook.net,connect.facebook.net \
-               --exclude-directories=/_next/static/webpack,/_next/static/logs \
+               --exclude-domains=google-analytics.com,googletagmanager.com,facebook.net \
+               --reject="*.map,*.txt,robots.txt" \
                --header="Accept: image/avif,image/webp,*/*" \
                --user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
                "${{ secrets.FRAMER_URL }}" -P ./temp_site
           
-          # Умный поиск папки с сайтом и перенос в dist
           mkdir -p ./dist
           SITE_DIR=$(find ./temp_site -name "index.html" -printf '%h' -quit)
           cp -r $SITE_DIR/. ./dist/
