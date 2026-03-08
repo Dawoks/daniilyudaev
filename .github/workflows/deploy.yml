@@ -1,10 +1,9 @@
-name: Ultimate Stable Framer Deploy
+name: Speed & Stability Framer Deploy
 on:
   workflow_dispatch:
   schedule:
     - cron: '0 * * * *'
 
-# Эта штука отменяет старые билды, если запустился новый
 concurrency:
   group: "pages"
   cancel-in-progress: true
@@ -25,8 +24,10 @@ jobs:
         run: |
           rm -rf ./temp_site ./dist
           
-          # Мы добавили --reject, чтобы не качать мусорные файлы (.map, .txt, .json логов)
+          # Ограничиваем уровень вложенности до 3 (Главная -> Кейс -> Внутрянка)
+          # И исключаем тяжелые технические папки Фреймера
           wget --recursive \
+               --level=3 \
                --convert-links \
                --adjust-extension \
                --page-requisites \
@@ -34,6 +35,7 @@ jobs:
                --span-hosts \
                --domains="${{ secrets.FRAMER_URL }}",framerusercontent.com,framer.com \
                --exclude-domains=google-analytics.com,googletagmanager.com,facebook.net \
+               --exclude-directories=/_next/static/chunks,/_next/static/webpack \
                --reject="*.map,*.txt,robots.txt" \
                --header="Accept: image/avif,image/webp,*/*" \
                --user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
