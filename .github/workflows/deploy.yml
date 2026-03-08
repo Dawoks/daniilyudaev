@@ -39,7 +39,6 @@ jobs:
             --page-requisites \
             --convert-links \
             --adjust-extension \
-            --restrict-file-names=windows \
             --span-hosts \
             --no-parent \
             --timeout=20 \
@@ -47,7 +46,6 @@ jobs:
             --waitretry=1 \
             --domains="$SITE_HOST,framerusercontent.com,framer.com,public.blob.vercel-storage.com" \
             --exclude-domains=google-analytics.com,googletagmanager.com,facebook.net,doubleclick.net \
-            --accept-regex="^https?://($SITE_HOST(/.*)?|framerusercontent\\.com/.*(\\.(css|js|mjs|png|jpg|jpeg|webp|avif|gif|svg|ico|woff|woff2|ttf|otf|eot|mp4|webm|json|txt|xml)(\\?.*)?|/images/.*|/sites/.*|/modules/.*|/fonts/.*)|www\\.framer\\.com/creators-assets/_next/image/.*|public\\.blob\\.vercel-storage\\.com/.*)$" \
             --reject-regex='(framer\.com/marketplace/|/templates/|%2Ftemplates%2F|/plugins/|%2Fplugins%2F|/sites/[0-9]+/thumbnail-|%2Fsites%2F[0-9]+%2Fthumbnail-)' \
             --reject="*.map,robots.txt" \
             --user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" \
