@@ -58,6 +58,9 @@ jobs:
 
           touch ./dist/.nojekyll
 
+          find ./dist -type f \( -name "*.html" -o -name "*.js" -o -name "*.css" \) -print0 | \
+          xargs -0 perl -0pi -e 's#(?:\.\./)*framerusercontent\.com/images/([^"'\''\s<>()]+?)%3[Ff]#https://framerusercontent.com/images/$1?#g'
+
           cat > ./dist/index.html <<EOF
           <!doctype html>
           <html lang="ru">
