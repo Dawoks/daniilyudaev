@@ -50,7 +50,7 @@ jobs:
 
           mkdir -p ./dist
           cp -R ./temp_site/. ./dist/
-          find ./dist -type f -name "*.html" -exec sed -i 's|</head>|<style>#__framer-badge-container{display:none !important;visibility:hidden !important;opacity:0 !important;pointer-events:none !important}</style></head>|g' {} +
+          find ./dist -type f -name "*.html" -exec sed -i 's|</head>|<style>#__framer-badge-container,#__framer-editorbar-container,#__framer-editorbar-button,#__framer-editorbar-label{display:none !important;visibility:hidden !important;opacity:0 !important;pointer-events:none !important}</style></head>|g' {} +
 
           touch ./dist/.nojekyll
 
