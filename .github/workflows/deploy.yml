@@ -1,4 +1,4 @@
-name: Fast & Clean Framer Deploy
+name: Ultimate Stable Framer Deploy
 on:
   workflow_dispatch:
   schedule:
@@ -18,24 +18,25 @@ jobs:
 
       - name: Download Site
         run: |
-          # Полная очистка перед стартом
+          # Чистим старое
           rm -rf ./temp_site ./dist
           
-          # Скачиваем сайт (level 2 достанет до кейсов)
+          # Скачиваем всё важное (шрифты, анимации, картинки)
+          # Но запрещаем качать бесконечный системный мусор
           wget --recursive \
-               --level=2 \
                --convert-links \
                --adjust-extension \
                --page-requisites \
                --no-parent \
                --span-hosts \
-               --domains="${{ secrets.FRAMER_URL }}",framerusercontent.com \
-               --exclude-domains=google-analytics.com,googletagmanager.com \
+               --domains="${{ secrets.FRAMER_URL }}",framerusercontent.com,framer.com \
+               --exclude-domains=google-analytics.com,googletagmanager.com,facebook.net,connect.facebook.net \
+               --exclude-directories=/_next/static/webpack,/_next/static/logs \
                --header="Accept: image/avif,image/webp,*/*" \
+               --user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
                "${{ secrets.FRAMER_URL }}" -P ./temp_site
           
-          # Самый надежный способ переноса:
-          # Ищем папку, где лежит index.html и копируем всё из неё в dist
+          # Умный поиск папки с сайтом и перенос в dist
           mkdir -p ./dist
           SITE_DIR=$(find ./temp_site -name "index.html" -printf '%h' -quit)
           cp -r $SITE_DIR/. ./dist/
