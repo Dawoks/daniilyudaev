@@ -1,4 +1,4 @@
-name: Speed & Stability Framer Deploy
+name: Superfast Framer Deploy
 on:
   workflow_dispatch:
   schedule:
@@ -20,28 +20,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download Site
+      - name: Download Site (High Speed)
         run: |
           rm -rf ./temp_site ./dist
           
-          # Ограничиваем уровень вложенности до 3 (Главная -> Кейс -> Внутрянка)
-          # И исключаем тяжелые технические папки Фреймера
+          # Мы используем --level=1 и --page-requisites
+          # Это скачает Главную + Кейсы + ВСЕ картинки и шрифты, 
+          # но НЕ пойдет по бесконечным техническим ссылкам Фреймера.
           wget --recursive \
-               --level=3 \
+               --level=2 \
                --convert-links \
                --adjust-extension \
                --page-requisites \
                --no-parent \
                --span-hosts \
-               --domains="${{ secrets.FRAMER_URL }}",framerusercontent.com,framer.com \
-               --exclude-domains=google-analytics.com,googletagmanager.com,facebook.net \
-               --exclude-directories=/_next/static/chunks,/_next/static/webpack \
+               --domains="${{ secrets.FRAMER_URL }}",framerusercontent.com \
+               --exclude-domains=google-analytics.com,googletagmanager.com,facebook.net,framer.com \
                --reject="*.map,*.txt,robots.txt" \
                --header="Accept: image/avif,image/webp,*/*" \
                --user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
                "${{ secrets.FRAMER_URL }}" -P ./temp_site
           
           mkdir -p ./dist
+          # Копируем файлы, выпрямляя структуру
           SITE_DIR=$(find ./temp_site -name "index.html" -printf '%h' -quit)
           cp -r $SITE_DIR/. ./dist/
 
