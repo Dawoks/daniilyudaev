@@ -14,16 +14,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Framer CLI
-        run: npm install -g framer-cli
-
       - name: Export from Framer
         env:
           FRAMER_TOKEN: ${{ secrets.TOSTATIC_API_KEY }}
           SITE_URL: ${{ secrets.FRAMER_URL }}
         run: |
-          # Экспорт проекта напрямую через официальный инструмент
-          framer-cli export "$SITE_URL" --out ./dist --token "$FRAMER_TOKEN"
+          # Используем npx — он сам скачает и СРАЗУ запустит экспорт
+          npx framer-cli export "$SITE_URL" --out ./dist --token "$FRAMER_TOKEN"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
