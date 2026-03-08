@@ -15,7 +15,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install ToStatic
-        run: npm install -g tostatic
+        run: npm install -g https://github.com
+
 
       - name: Export from Framer
         env:
