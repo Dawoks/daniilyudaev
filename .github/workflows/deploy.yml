@@ -46,6 +46,7 @@ jobs:
             --waitretry=1 \
             --domains="$SITE_HOST,framerusercontent.com,framer.com,public.blob.vercel-storage.com" \
             --exclude-domains=google-analytics.com,googletagmanager.com,facebook.net,doubleclick.net \
+            --reject-regex='(creators-assets/_next/image/.*((%2Fsites%2F[0-9]+%2Fthumbnail-|/sites/[0-9]+/thumbnail-)|(%2Ftemplates%2F[0-9]+%2F|/templates/[0-9]+/)))' \
             --reject="*.map,robots.txt" \
             --user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" \
             -P ./temp_site \
