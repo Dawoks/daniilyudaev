@@ -1,8 +1,8 @@
-name: Free Framer Autodeploy
+name: Ultimate Free Framer Deploy
 on:
-  workflow_dispatch: # Запуск кнопкой
+  workflow_dispatch: # Кнопка для запуска вручную
   schedule:
-    - cron: '0 * * * *' # Авто-обновление каждый час (по желанию)
+    - cron: '0 * * * *' # Авто-обновление каждый час
 
 permissions:
   contents: write
@@ -16,14 +16,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download Framer Site
+      - name: Download Framer Site (Full Mirror)
         run: |
-          # Мы берем ваш опубликованный сайт и скачиваем его целиком
-          # Замените адрес в кавычках на ваш .framer.ai если не хотите использовать секреты
-          wget --mirror --convert-links --adjust-extension --page-requisites --no-parent "${{ secrets.FRAMER_URL }}" -P ./temp_site
+          # Мы разрешаем скачивать картинки с серверов Framer прямо в репозиторий
+          wget --mirror \
+               --convert-links \
+               --adjust-extension \
+               --page-requisites \
+               --no-parent \
+               --span-hosts \
+               --domains="${{ secrets.FRAMER_URL }}",framerusercontent.com,framer.com \
+               --header="Accept: image/avif,image/webp,*/*" \
+               "${{ secrets.FRAMER_URL }}" -P ./temp_site
           
-          # Переносим файлы в чистую папку для деплоя
-          mkdir ./dist
+          # Очистка и перенос файлов
+          mkdir -p ./dist
           cp -r ./temp_site/*/* ./dist/ || cp -r ./temp_site/* ./dist/
 
       - name: Upload artifact
