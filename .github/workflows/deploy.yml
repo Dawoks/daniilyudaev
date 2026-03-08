@@ -1,6 +1,8 @@
-name: Deploy Framer via Official CLI
+name: Free Framer Autodeploy
 on:
-  workflow_dispatch:
+  workflow_dispatch: # Запуск кнопкой
+  schedule:
+    - cron: '0 * * * *' # Авто-обновление каждый час (по желанию)
 
 permissions:
   contents: write
@@ -14,13 +16,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Export from Framer
-        env:
-          FRAMER_TOKEN: ${{ secrets.TOSTATIC_API_KEY }}
-          SITE_URL: ${{ secrets.FRAMER_URL }}
+      - name: Download Framer Site
         run: |
-          # Используем npx — он сам скачает и СРАЗУ запустит экспорт
-          npx framer-cli export "$SITE_URL" --out ./dist --token "$FRAMER_TOKEN"
+          # Мы берем ваш опубликованный сайт и скачиваем его целиком
+          # Замените адрес в кавычках на ваш .framer.ai если не хотите использовать секреты
+          wget --mirror --convert-links --adjust-extension --page-requisites --no-parent "${{ secrets.FRAMER_URL }}" -P ./temp_site
+          
+          # Переносим файлы в чистую папку для деплоя
+          mkdir ./dist
+          cp -r ./temp_site/*/* ./dist/ || cp -r ./temp_site/* ./dist/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
