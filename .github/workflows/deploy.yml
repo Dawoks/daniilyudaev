@@ -2,7 +2,7 @@ name: Fast & Clean Framer Deploy
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 * * * *' # Обновление каждый час
+    - cron: '0 * * * *'
 
 permissions:
   contents: write
@@ -16,13 +16,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download Site (Optimized)
+      - name: Download Site
         run: |
-          # Чистим временные папки перед началом
+          # Полная очистка перед стартом
           rm -rf ./temp_site ./dist
           
-          # Скачиваем: 2 уровня вложенности (Главная -> Кейсы)
-          # Этого хватит, чтобы все ссылки внутри кейсов работали
+          # Скачиваем сайт (level 2 достанет до кейсов)
           wget --recursive \
                --level=2 \
                --convert-links \
@@ -31,14 +30,15 @@ jobs:
                --no-parent \
                --span-hosts \
                --domains="${{ secrets.FRAMER_URL }}",framerusercontent.com \
-               --exclude-domains=google-analytics.com,googletagmanager.com,facebook.net \
+               --exclude-domains=google-analytics.com,googletagmanager.com \
                --header="Accept: image/avif,image/webp,*/*" \
                "${{ secrets.FRAMER_URL }}" -P ./temp_site
           
-          # Перенос файлов в папку для деплоя
+          # Самый надежный способ переноса:
+          # Ищем папку, где лежит index.html и копируем всё из неё в dist
           mkdir -p ./dist
-          # Копируем содержимое, игнорируя лишние вложенные папки доменов
-          find ./temp_site -mindepth 2 -maxdepth 2 -type d -exec cp -rn {}/. ./dist/ \; || cp -r ./temp_site/* ./dist/
+          SITE_DIR=$(find ./temp_site -name "index.html" -printf '%h' -quit)
+          cp -r $SITE_DIR/. ./dist/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
