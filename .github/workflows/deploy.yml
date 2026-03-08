@@ -1,8 +1,8 @@
-name: Ultimate Free Framer Deploy
+name: Fast & Clean Framer Deploy
 on:
-  workflow_dispatch: # Кнопка для запуска вручную
+  workflow_dispatch:
   schedule:
-    - cron: '0 * * * *' # Авто-обновление каждый час
+    - cron: '0 * * * *' # Обновление каждый час
 
 permissions:
   contents: write
@@ -16,22 +16,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download Framer Site (Full Mirror)
+      - name: Download Site (Optimized)
         run: |
-          # Мы разрешаем скачивать картинки с серверов Framer прямо в репозиторий
-          wget --mirror \
+          # Чистим временные папки перед началом
+          rm -rf ./temp_site ./dist
+          
+          # Скачиваем: 2 уровня вложенности (Главная -> Кейсы)
+          # Этого хватит, чтобы все ссылки внутри кейсов работали
+          wget --recursive \
+               --level=2 \
                --convert-links \
                --adjust-extension \
                --page-requisites \
                --no-parent \
                --span-hosts \
-               --domains="${{ secrets.FRAMER_URL }}",framerusercontent.com,framer.com \
+               --domains="${{ secrets.FRAMER_URL }}",framerusercontent.com \
+               --exclude-domains=google-analytics.com,googletagmanager.com,facebook.net \
                --header="Accept: image/avif,image/webp,*/*" \
                "${{ secrets.FRAMER_URL }}" -P ./temp_site
           
-          # Очистка и перенос файлов
+          # Перенос файлов в папку для деплоя
           mkdir -p ./dist
-          cp -r ./temp_site/*/* ./dist/ || cp -r ./temp_site/* ./dist/
+          # Копируем содержимое, игнорируя лишние вложенные папки доменов
+          find ./temp_site -mindepth 2 -maxdepth 2 -type d -exec cp -rn {}/. ./dist/ \; || cp -r ./temp_site/* ./dist/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
