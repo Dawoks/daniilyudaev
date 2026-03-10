@@ -2,8 +2,8 @@ name: Fast Framer Pages Deploy
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 * * * *'
+#  schedule:
+#    - cron: '0 * * * *'
 
 concurrency:
   group: "pages"
