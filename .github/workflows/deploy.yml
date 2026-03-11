@@ -81,4 +81,6 @@ jobs:
           du -sb ./dist
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifac
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
