@@ -5,6 +5,9 @@ on:
 #  schedule:
 #    - cron: '0 * * * *'
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 concurrency:
   group: "pages"
   cancel-in-progress: true
@@ -20,7 +23,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Download site structure
         env:
@@ -71,17 +74,11 @@ jobs:
           EOF
 
           cp ./dist/index.html ./dist/404.html
-   
+
       - name: Show site size
         run: |
           du -sh ./dist
           du -sb ./dist
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './dist'
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/upload-pages-artifac
